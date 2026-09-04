@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ask AI</title>
+<meta name="description" content="Your own button for asking AI a question — and getting the answer back in your language.">
+<meta name="theme-color" content="#f5c518">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" id="iosTitle" content="Ask AI">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14232e; --ink-soft:#4a6072; --paper:#e9ece5; --panel:#fdfdfb;
+  --signal:#f5c518; --line:#c9cfc6; --green:#1f7a5c; --r:3px;
+  --sans:Inter,"Noto Sans Devanagari",system-ui,sans-serif;
+  --disp:"Bricolage Grotesque","Noto Sans Devanagari",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%}
+body{
+  background:var(--paper);color:var(--ink);
+  font:400 18px/1.65 var(--sans);-webkit-font-smoothing:antialiased;
+  padding:max(24px,env(safe-area-inset-top)) 20px max(28px,env(safe-area-inset-bottom));
+}
+html[lang="hi"] body{line-height:1.8}
+.wrap{max-width:560px;margin:0 auto}
+h1{font:700 clamp(27px,7vw,36px)/1.15 var(--disp);letter-spacing:-.02em;margin:0 0 26px}
+html[lang="hi"] h1{line-height:1.35}
+
+.box{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:6px 6px 6px 0;display:flex;align-items:flex-end;gap:8px}
+.box:focus-within{border-color:var(--ink)}
+textarea{
+  flex:1;border:0;background:none;resize:none;outline:none;
+  font:400 21px/1.5 var(--sans);color:var(--ink);
+  padding:16px 4px 16px 18px;min-height:104px;max-height:40vh;
+}
+textarea::placeholder{color:var(--ink-soft);opacity:.75}
+.tools{display:flex;flex-direction:column;gap:8px;padding:0 4px 6px 0}
+.icon{
+  width:54px;height:54px;flex:none;border-radius:50%;border:0;cursor:pointer;
+  display:grid;place-items:center;background:var(--line);transition:background .16s,transform .16s;
+}
+.icon svg{width:24px;height:24px;pointer-events:none}
+#go{background:var(--signal)}
+#go:disabled{background:var(--line);cursor:not-allowed}
+#mic{display:none;background:var(--panel);border:2px solid var(--line)}
+#mic.on{display:grid}
+#mic.rec{background:#e5484d;border-color:#e5484d;animation:pulse 1.15s ease-in-out infinite}
+#mic.rec svg{stroke:#fff}
+@keyframes pulse{50%{transform:scale(.9)}}
+button:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+.hintline{font-size:16px;color:var(--ink-soft);margin:16px 0 0;min-height:24px}
+
+.install{
+  margin-top:38px;padding:20px;background:var(--panel);
+  border:2px dashed var(--line);border-radius:12px;display:none;
+}
+.install.on{display:block}
+.install h2{font:700 20px/1.3 var(--disp);margin:0 0 8px}
+html[lang="hi"] .install h2{line-height:1.45}
+.install p{margin:0 0 14px;font-size:16.5px;color:var(--ink-soft)}
+.install button{
+  font:600 17px/1 var(--sans);background:var(--signal);color:var(--ink);
+  border:2px solid var(--ink);border-radius:var(--r);padding:14px 22px;cursor:pointer;
+}
+.share{display:inline-block;width:19px;height:19px;vertical-align:-4px;margin:0 2px}
+
+.foot{margin-top:34px;font-size:14.5px;color:var(--ink-soft)}
+.foot a{color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1 id="head">Ask anything.</h1>
+
+  <div class="box">
+    <textarea id="q" rows="3" autocomplete="off" autocapitalize="sentences" spellcheck="false"></textarea>
+    <div class="tools">
+      <button class="icon" id="mic" type="button" aria-label="Speak">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#14232e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>
+        </svg>
+      </button>
+      <button class="icon" id="go" type="button" aria-label="Ask" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#14232e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <p class="hintline" id="hint"></p>
+
+  <section class="install" id="install">
+    <h2 id="insTitle"></h2>
+    <p id="insBody"></p>
+    <button id="insBtn" type="button" hidden></button>
+  </section>
+
+  <p class="foot"><a href="../" id="back">Make a link for someone else</a></p>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  var LANGS = {
+    "":        { suffix:"", hl:"", speech:"en-IN" },
+    "hi":      { suffix:"कृपया इसका उत्तर हिंदी में, आसान शब्दों में और संक्षेप में दें।", hl:"hi", htmlLang:"hi", speech:"hi-IN" },
+    "hi-latn": { suffix:"Please answer in Hindi, but write it using English letters (Roman script), not Devanagari. Keep it short and simple.", hl:"hi", speech:"hi-IN" },
+    "ta":      { suffix:"தயவுசெய்து இதற்கு தமிழில், எளிய வார்த்தைகளில், சுருக்கமாக பதில் அளிக்கவும்.", hl:"ta", htmlLang:"ta", speech:"ta-IN" },
+    "te":      { suffix:"దయచేసి దీనికి తెలుగులో, సులభమైన మాటల్లో, క్లుప్తంగా సమాధానం ఇవ్వండి.", hl:"te", htmlLang:"te", speech:"te-IN" },
+    "bn":      { suffix:"অনুগ্রহ করে এর উত্তর বাংলায়, সহজ ভাষায় ও সংক্ষেপে দিন।", hl:"bn", htmlLang:"bn", speech:"bn-IN" },
+    "mr":      { suffix:"कृपया याचे उत्तर मराठीत, सोप्या शब्दांत आणि थोडक्यात द्या.", hl:"mr", htmlLang:"mr", speech:"mr-IN" },
+    "gu":      { suffix:"કૃપા કરીને આનો જવાબ ગુજરાતીમાં, સરળ શબ્દોમાં અને ટૂંકમાં આપો.", hl:"gu", htmlLang:"gu", speech:"gu-IN" },
+    "kn":      { suffix:"ದಯವಿಟ್ಟು ಇದಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ, ಸರಳ ಪದಗಳಲ್ಲಿ ಮತ್ತು ಸಂಕ್ಷಿಪ್ತವಾಗಿ ಉತ್ತರಿಸಿ.", hl:"kn", htmlLang:"kn", speech:"kn-IN" },
+    "ml":      { suffix:"ദയവായി ഇതിന് മലയാളത്തിൽ, ലളിതമായ വാക്കുകളിൽ, ചുരുക്കി മറുപടി നൽകുക.", hl:"ml", htmlLang:"ml", speech:"ml-IN" },
+    "pa":      { suffix:"ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਦਾ ਜਵਾਬ ਪੰਜਾਬੀ ਵਿੱਚ, ਸੌਖੇ ਸ਼ਬਦਾਂ ਵਿੱਚ ਅਤੇ ਸੰਖੇਪ ਵਿੱਚ ਦਿਓ।", hl:"pa", htmlLang:"pa", speech:"pa-IN" },
+    "ur":      { suffix:"براہ کرم اس کا جواب اردو میں، آسان الفاظ میں اور مختصر دیں۔", hl:"ur", htmlLang:"ur", speech:"ur-IN" }
+  };
+
+  var UI = {
+    en: {
+      appTitle:"Ask AI",
+      head:"Ask anything.",
+      ph:"Type your question here\u2026",
+      hint:"The answer comes back in English.",
+      listening:"Listening\u2026",
+      insTitleAndroid:"Keep this on your phone",
+      insBodyAndroid:"Add it to your home screen and it's one tap, any time. No link needed.",
+      insBtn:"Add to home screen",
+      insTitleIOS:"Keep this on your phone",
+      insBodyIOS:"Tap the Share button below, then choose \u201cAdd to Home Screen\u201d.",
+      back:"Make a link for someone else"
+    },
+    hi: {
+      appTitle:"AI से पूछें",
+      head:"जो पूछना हो, पूछिए।",
+      ph:"अपना सवाल यहाँ लिखिए\u2026",
+      hint:"जवाब हिंदी में आएगा।",
+      listening:"सुन रहे हैं\u2026",
+      insTitleAndroid:"इसे अपने फ़ोन पर रख लीजिए",
+      insBodyAndroid:"होम स्क्रीन पर लगा लीजिए — फिर जब चाहें, एक बार दबाइए। लिंक की ज़रूरत नहीं।",
+      insBtn:"होम स्क्रीन पर लगाएँ",
+      insTitleIOS:"इसे अपने फ़ोन पर रख लीजिए",
+      insBodyIOS:"नीचे शेयर का निशान दबाइए, फिर \u201cAdd to Home Screen\u201d चुनिए।",
+      back:"किसी और के लिए लिंक बनाएँ"
+    },
+    "hi-latn": {
+      appTitle:"AI se poochein",
+      head:"Jo poochna ho, poochiye.",
+      ph:"Apna sawaal yahan likhiye\u2026",
+      hint:"Jawab Hindi mein aayega.",
+      listening:"Sun rahe hain\u2026",
+      insTitleAndroid:"Ise apne phone par rakh lijiye",
+      insBodyAndroid:"Home screen par laga lijiye — phir jab chahein, ek baar dabaiye. Link ki zaroorat nahi.",
+      insBtn:"Home screen par lagaiye",
+      insTitleIOS:"Ise apne phone par rakh lijiye",
+      insBodyIOS:"Neeche share ka nishaan dabaiye, phir \u201cAdd to Home Screen\u201d chuniye.",
+      back:"Kisi aur ke liye link banaiye"
+    }
+  };
+
+  function pref(k, v){
+    try {
+      if (v === undefined) return localStorage.getItem(k);
+      localStorage.setItem(k, v);
+    } catch(e){ return null; }
+  }
+
+  /* Language: from the link the first time, then remembered so the
+     installed shortcut opens correctly with no hash. */
+  var hash = new URLSearchParams(location.hash.replace(/^#/,""));
+  var lang = hash.get("l");
+  if (lang === null || !LANGS[lang]) lang = pref("lmaaify:lang");
+  if (lang === null || !LANGS[lang]) lang = "";
+  pref("lmaaify:lang", lang);
+
+  var L = LANGS[lang], T = UI[lang] || UI.en;
+
+  if (L.htmlLang) document.documentElement.lang = L.htmlLang;
+  if (lang === "ur") document.documentElement.dir = "rtl";
+
+  document.title = T.appTitle;
+  document.getElementById("iosTitle").setAttribute("content", T.appTitle);
+  document.getElementById("head").textContent = T.head;
+  document.getElementById("back").textContent = T.back;
+
+  var q = document.getElementById("q"),
+      go = document.getElementById("go"),
+      mic = document.getElementById("mic"),
+      hint = document.getElementById("hint");
+
+  q.placeholder = T.ph;
+  q.setAttribute("lang", L.htmlLang || "en");
+  hint.textContent = T.hint;
+
+  function ask(){
+    var text = q.value.trim();
+    if (!text) return;
+    var full = L.suffix ? text + "\n\n" + L.suffix : text;
+    location.href = "https://www.google.com/search?udm=50&aep=11"
+                  + (L.hl ? "&hl=" + L.hl : "")
+                  + "&q=" + encodeURIComponent(full);
+  }
+
+  function sync(){ go.disabled = !q.value.trim(); }
+  q.addEventListener("input", sync);
+  q.addEventListener("keydown", function(e){
+    if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); ask(); }
+  });
+  go.addEventListener("click", ask);
+  sync();
+
+  /* ---- voice, where the browser supports it (Gboard covers the rest) ---- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR){
+    mic.className = "icon on";
+    var rec = null, recording = false;
+    mic.addEventListener("click", function(){
+      if (recording && rec){ rec.stop(); return; }
+      rec = new SR();
+      rec.lang = L.speech;
+      rec.interimResults = true;
+      rec.continuous = false;
+      rec.onstart = function(){
+        recording = true;
+        mic.className = "icon on rec";
+        hint.textContent = T.listening;
+      };
+      rec.onresult = function(e){
+        var s = "";
+        for (var i = e.resultIndex; i < e.results.length; i++) s += e.results[i][0].transcript;
+        q.value = s;
+        sync();
+      };
+      rec.onerror = function(){ reset(); };
+      rec.onend = function(){ reset(); };
+      function reset(){
+        recording = false;
+        mic.className = "icon on";
+        hint.textContent = T.hint;
+      }
+      try { rec.start(); } catch(e){ reset(); }
+    });
+  }
+
+  /* ---- add to home screen ---- */
+  var box = document.getElementById("install"),
+      insTitle = document.getElementById("insTitle"),
+      insBody = document.getElementById("insBody"),
+      insBtn = document.getElementById("insBtn");
+
+  var standalone = window.matchMedia("(display-mode: standalone)").matches
+                   || window.navigator.standalone === true;
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+              || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (!standalone && pref("lmaaify:hideinstall") !== "1"){
+    if (isIOS){
+      insTitle.textContent = T.insTitleIOS;
+      insBody.innerHTML = T.insBodyIOS.replace("\u2b06", "");
+      box.className = "install on";
+    } else {
+      // Android/Chrome: wait for the real prompt so the button always works
+      window.addEventListener("beforeinstallprompt", function(e){
+        e.preventDefault();
+        insTitle.textContent = T.insTitleAndroid;
+        insBody.textContent = T.insBodyAndroid;
+        insBtn.textContent = T.insBtn;
+        insBtn.hidden = false;
+        box.className = "install on";
+        insBtn.onclick = function(){
+          e.prompt();
+          e.userChoice.then(function(r){
+            if (r.outcome === "accepted"){
+              pref("lmaaify:hideinstall", "1");
+              box.className = "install";
+            }
+          });
+        };
+      });
+    }
+  }
+  window.addEventListener("appinstalled", function(){
+    pref("lmaaify:hideinstall", "1");
+    box.className = "install";
+  });
+
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("../sw.js", { scope: "../" })["catch"](function(){});
+    });
+  }
+})();
+</script>
+</body>
+</html>

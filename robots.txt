@@ -1,0 +1,8 @@
+# This file only has effect at the DOMAIN ROOT: https://hariomgaur.in/robots.txt
+# Merge these lines into the robots.txt of the repo that serves hariomgaur.in.
+# A robots.txt inside /lmaaify/ is ignored by every crawler.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://hariomgaur.in/lmaaify/sitemap.xml

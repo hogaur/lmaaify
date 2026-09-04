@@ -3,7 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Let me ask AI for you</title>
+<title>Let me ask AI for you — send a question as a link</title>
+<meta name="description" content="Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in Hindi, Tamil, Bengali or nine other languages. Works with Google AI Mode, ChatGPT, Claude, Perplexity and Grok.">
+<link rel="canonical" href="https://hariomgaur.in/lmaaify/">
+<meta name="theme-color" content="#f5c518">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Let me ask AI for you">
+<meta property="og:url" content="https://hariomgaur.in/lmaaify/">
+<meta property="og:title" content="Let me ask AI for you">
+<meta property="og:description" content="Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language.">
+<meta property="og:image" content="https://hariomgaur.in/lmaaify/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Let me ask AI for you, above a chat box holding a question written in Hindi.">
+<meta property="og:locale" content="en_IN">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Let me ask AI for you">
+<meta name="twitter:description" content="Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language.">
+<meta name="twitter:image" content="https://hariomgaur.in/lmaaify/og.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -60,23 +82,25 @@ button.act:disabled{opacity:.4;cursor:not-allowed}
 #reveal{display:none;min-height:100vh;place-items:center;padding:28px 22px}
 #reveal.on{display:grid}
 .stage{width:100%;max-width:560px}
-.note{font:500 17px/1.5 var(--sans);background:var(--signal);padding:13px 16px;border-radius:var(--r);margin:0 0 18px}
+.note{font:500 19px/1.5 var(--sans);background:var(--signal);padding:14px 17px;border-radius:var(--r);margin:0 0 18px}
 .tease{font:700 clamp(24px,5.5vw,34px)/1.15 var(--disp);letter-spacing:-.02em;margin:0 0 22px}
 html[lang="hi"] .tease{line-height:1.3}
 .mock{background:var(--panel);border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
-.mock-bar{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1.5px solid var(--line);font-size:13px;font-weight:600;color:var(--ink-soft)}
+.mock-bar{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1.5px solid var(--line);font-size:14px;font-weight:600;color:var(--ink-soft)}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none}
 .mock-body{padding:20px 16px 16px;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
-.mock-input{display:flex;align-items:flex-end;gap:10px;border:1.5px solid var(--line);border-radius:22px;padding:11px 11px 11px 16px;background:var(--paper)}
-#typed{flex:1;font-size:16.5px;line-height:1.5;min-height:22px;word-break:break-word}
+.mock-input{display:flex;align-items:flex-end;gap:10px;border:1.5px solid var(--line);border-radius:22px;padding:12px 11px 12px 16px;background:var(--paper)}
+#typed{flex:1;font-size:19.5px;line-height:1.55;min-height:26px;word-break:break-word}
 .caret{display:inline-block;width:2px;height:1.05em;background:var(--ink);vertical-align:-2px;margin-left:1px;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
-.send{width:34px;height:34px;flex:none;border-radius:50%;background:var(--line);display:grid;place-items:center;transition:background .18s}
+.send{width:38px;height:38px;flex:none;border-radius:50%;background:var(--line);display:grid;place-items:center;transition:background .18s}
 .send.hot{background:var(--signal)}
-.send svg{width:16px;height:16px}
-.status{margin-top:20px;font-size:15px;color:var(--ink-soft);min-height:24px}
+.send svg{width:18px;height:18px}
+.status{margin-top:20px;font-size:17px;color:var(--ink-soft);min-height:26px}
 .status a{color:var(--ink)}
-#openBtn{display:none;margin-top:18px;font-size:16px}
+#skip{display:none;margin:14px 0 0;background:none;border:0;padding:6px 0;font:500 15px/1 var(--sans);color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+#skip.on{display:inline-block}
+#openBtn{display:none;margin-top:18px;font-size:17px}
 #openBtn.on{display:inline-block}
 .small{margin-top:26px;font-size:13px;color:var(--ink-soft)}
 .small a{color:var(--ink-soft)}
@@ -141,6 +165,7 @@ html[lang="hi"] .tease{line-height:1.3}
         </div>
       </div>
     </div>
+    <button id="skip" type="button">Skip</button>
     <p class="status" id="rStatus"></p>
     <button class="act primary" id="openBtn">Open it</button>
     <p class="small"><a href="#" id="mine">Make one of these yourself</a></p>
@@ -161,6 +186,7 @@ html[lang="hi"] .tease{line-height:1.3}
                   tease:"लीजिए, मैं आपके लिए टाइप कर देता हूँ।",
                   sending:"{name} पर भेजा जा रहा है\u2026",
                   now:"अभी खोलें",
+                  skip:"छोड़ें",
                   pasteTease:"इसे कॉपी करके Gemini में पेस्ट कीजिए।",
                   pasteBody:"Gemini को लिंक से सवाल नहीं भेजा जा सकता। नीचे दबाइए — सवाल कॉपी हो जाएगा और Gemini खुल जाएगा। फिर बॉक्स को देर तक दबाकर पेस्ट कीजिए।",
                   pasteBtn:"सवाल कॉपी करके {name} खोलें",
@@ -172,6 +198,7 @@ html[lang="hi"] .tease{line-height:1.3}
                   tease:"Lijiye, main aapke liye type kar deta hoon.",
                   sending:"{name} par bhej rahe hain\u2026",
                   now:"abhi kholein",
+                  skip:"chhodein",
                   pasteTease:"Ise copy karke Gemini mein paste kijiye.",
                   pasteBody:"Gemini ko link se sawaal nahi bheja ja sakta. Neeche dabaiye — sawaal copy ho jayega aur Gemini khul jayega. Phir box ko der tak dabakar paste kijiye.",
                   pasteBtn:"Sawaal copy karke {name} kholein",
@@ -192,6 +219,7 @@ html[lang="hi"] .tease{line-height:1.3}
     tease:"Here, I'll type it for you.",
     sending:"Sending to {name}\u2026",
     now:"go now",
+    skip:"Skip",
     pasteTease:"Copy this, then paste it into Gemini.",
     pasteBody:"{name} can't be handed a question through a link, so tap below \u2014 the question goes to your clipboard and Gemini opens. Long-press the box and paste.",
     pasteBtn:"Copy question and open {name}",
@@ -365,12 +393,29 @@ html[lang="hi"] .tease{line-height:1.3}
         send = document.getElementById("rSend"),
         status = document.getElementById("rStatus"),
         openBtn = document.getElementById("openBtn"),
+        skipBtn = document.getElementById("skip"),
         caret = document.createElement("span");
     caret.className = "caret";
 
-    var animate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function pref(k, v){
+      try {
+        if (v === undefined) return localStorage.getItem(k);
+        localStorage.setItem(k, v);
+      } catch(e){ return null; }
+    }
 
+    var animate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                  && pref("lmaaify:skip") !== "1";
+
+    skipBtn.textContent = UI.skip;
+    skipBtn.onclick = function(){ pref("lmaaify:skip", "1"); finish(); };
+
+    var done = false;
     function finish(){
+      if (done) return;
+      done = true;
+      skipBtn.className = "";
+      typed.textContent = prompt;
       caret.remove();
       send.className = "send hot";
       if (t.auto){
@@ -398,12 +443,15 @@ html[lang="hi"] .tease{line-height:1.3}
       return;
     }
 
+    skipBtn.className = "on";
+
     var txt = document.createTextNode("");
     typed.appendChild(txt);
     typed.appendChild(caret);
 
     var i = 0;
     (function tick(){
+      if (done) return;
       if (i >= prompt.length){ setTimeout(finish, 550); return; }
       var ch = prompt[i++];
       txt.nodeValue += ch;

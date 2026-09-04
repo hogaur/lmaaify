@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Let me ask AI for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14232e;
+  --ink-soft:#4a6072;
+  --paper:#e9ece5;
+  --panel:#fdfdfb;
+  --signal:#f5c518;
+  --steel:#5b7080;
+  --green:#1f7a5c;
+  --line:#c9cfc6;
+  --r:3px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font:400 16px/1.6 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:660px;margin:0 auto;padding:40px 22px 72px}
+h1{
+  font:700 clamp(34px,7vw,52px)/1.02 "Bricolage Grotesque",Georgia,serif;
+  letter-spacing:-.025em;margin:0 0 12px;
+}
+h1 em{font-style:normal;background:var(--signal);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sub{color:var(--ink-soft);margin:0 0 34px;max-width:46ch}
+label{display:block;font-weight:600;font-size:13px;margin:0 0 7px}
+.hint{font-weight:400;color:var(--ink-soft)}
+textarea,input[type=text]{
+  width:100%;font:inherit;color:var(--ink);background:var(--panel);
+  border:1.5px solid var(--line);border-radius:var(--r);padding:13px 14px;
+}
+textarea{min-height:104px;resize:vertical;line-height:1.5}
+textarea:focus,input[type=text]:focus,button:focus-visible,a:focus-visible{
+  outline:2.5px solid var(--ink);outline-offset:2px;border-color:var(--ink)
+}
+.field{margin-bottom:26px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font:500 14px/1 Inter,sans-serif;color:var(--ink);background:var(--panel);
+  border:1.5px solid var(--line);border-radius:100px;padding:9px 15px;cursor:pointer;
+}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip small{display:block;font-size:11px;font-weight:400;opacity:.65;margin-top:2px}
+.warn{
+  font-size:13px;color:var(--ink-soft);border-left:3px solid var(--signal);
+  padding:8px 0 8px 12px;margin:12px 0 0;display:none
+}
+.warn.on{display:block}
+.out{border-top:1.5px solid var(--line);padding-top:26px;margin-top:8px}
+.link{
+  font:500 13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+  background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);
+  padding:12px 14px;word-break:break-all;color:var(--ink-soft);min-height:44px
+}
+.row{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+button.act{
+  font:600 15px/1 Inter,sans-serif;border:1.5px solid var(--ink);border-radius:var(--r);
+  padding:13px 20px;cursor:pointer;background:var(--panel);color:var(--ink)
+}
+button.act.primary{background:var(--signal);border-color:var(--ink)}
+button.act:disabled{opacity:.4;cursor:not-allowed}
+.foot{margin-top:52px;padding-top:22px;border-top:1.5px solid var(--line);font-size:13.5px;color:var(--ink-soft)}
+.foot p{margin:0 0 9px;max-width:56ch}
+.foot code{font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:2px}
+
+/* ---------- reveal ---------- */
+#reveal{display:none;min-height:100vh;place-items:center;padding:28px 22px}
+#reveal.on{display:grid}
+.stage{width:100%;max-width:560px}
+.note{
+  font:500 17px/1.45 Inter,sans-serif;background:var(--signal);
+  padding:13px 16px;border-radius:var(--r);margin:0 0 18px
+}
+.tease{font:700 clamp(24px,5.5vw,34px)/1.15 "Bricolage Grotesque",Georgia,serif;letter-spacing:-.02em;margin:0 0 22px}
+.mock{background:var(--panel);border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.mock-bar{
+  display:flex;align-items:center;gap:9px;padding:11px 14px;
+  border-bottom:1.5px solid var(--line);font-size:13px;font-weight:600;color:var(--ink-soft)
+}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none}
+.mock-body{padding:20px 16px 16px;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
+.mock-input{
+  display:flex;align-items:flex-end;gap:10px;border:1.5px solid var(--line);
+  border-radius:22px;padding:11px 11px 11px 16px;background:var(--paper)
+}
+#typed{flex:1;font-size:15.5px;line-height:1.45;min-height:22px;word-break:break-word}
+.caret{display:inline-block;width:2px;height:1.05em;background:var(--ink);vertical-align:-2px;margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.send{
+  width:34px;height:34px;flex:none;border-radius:50%;background:var(--line);
+  display:grid;place-items:center;transition:background .18s
+}
+.send.hot{background:var(--signal)}
+.send svg{width:16px;height:16px}
+.status{margin-top:20px;font-size:14px;color:var(--ink-soft);min-height:24px}
+.status a{color:var(--ink)}
+#openBtn{display:none;margin-top:18px}
+#openBtn.on{display:inline-block}
+.small{margin-top:26px;font-size:13px;color:var(--ink-soft)}
+.small a{color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){.caret{animation:none}*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ MAKER ============ -->
+<main class="wrap" id="maker">
+  <h1>Let me <em>ask AI</em> for you.</h1>
+  <p class="sub">Turn a question into a link. They tap it, watch it get typed out, and land on the answer. Next time, hopefully, they just ask it themselves.</p>
+
+  <div class="field">
+    <label for="q">The question they asked you</label>
+    <textarea id="q" placeholder="Which platform does the Vaigai Express leave from at Chennai Egmore, and how early should I get there?"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="note">A line from you <span class="hint">— optional</span></label>
+    <input type="text" id="note" maxlength="90" placeholder="Amma, this one's easier than calling me 🙂">
+  </div>
+
+  <div class="field">
+    <label>Where it should land</label>
+    <div class="chips" id="chips"></div>
+    <p class="warn" id="warn"></p>
+  </div>
+
+  <div class="out">
+    <label for="link">Your link</label>
+    <div class="link" id="link">Type a question above.</div>
+    <div class="row">
+      <button class="act primary" id="copy" disabled>Copy link</button>
+      <button class="act" id="wa" disabled>Send on WhatsApp</button>
+      <button class="act" id="test" disabled>Preview it</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <p><strong>How the link works.</strong> The question is packed into the part after the <code>#</code>, so it never reaches a server — not even yours. This whole thing is one static file with no backend.</p>
+    <p><strong>About Gemini.</strong> Google's Gemini app ignores prompts passed in a URL. Google AI Mode runs on Gemini and does accept them, so that's the default. If you pick the Gemini app anyway, the link copies the question to their clipboard and they paste it.</p>
+  </div>
+</main>
+
+<!-- ============ REVEAL ============ -->
+<div id="reveal">
+  <div class="stage">
+    <p class="note" id="rNote" hidden></p>
+    <p class="tease" id="rTease">Here, I'll type it for you.</p>
+    <div class="mock">
+      <div class="mock-bar"><span class="dot"></span><span id="rName">Google AI Mode</span></div>
+      <div class="mock-body">
+        <div class="mock-input">
+          <div id="typed"></div>
+          <div class="send" id="rSend"><svg viewBox="0 0 24 24" fill="none" stroke="#14232e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+        </div>
+      </div>
+    </div>
+    <p class="status" id="rStatus"></p>
+    <button class="act primary" id="openBtn">Open it</button>
+    <p class="small"><a href="#" id="mine">Make one of these yourself</a></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var TARGETS = {
+    aimode: {
+      name: "Google AI Mode",
+      label: "Google AI Mode",
+      note: "Gemini",
+      auto: true,
+      url: function(q){ return "https://www.google.com/search?udm=50&aep=11&q=" + encodeURIComponent(q); }
+    },
+    gemini: {
+      name: "Gemini",
+      label: "Gemini app",
+      note: "needs a paste",
+      auto: false,
+      warn: "The Gemini app drops prompts sent in a URL. This link will copy the question to their clipboard and open Gemini, so they paste and send. Google AI Mode runs on Gemini and needs no paste.",
+      url: function(q){ return "https://gemini.google.com/app?q=" + encodeURIComponent(q); }
+    },
+    chatgpt: {
+      name: "ChatGPT", label: "ChatGPT", note: "asks on open", auto: true,
+      url: function(q){ return "https://chatgpt.com/?q=" + encodeURIComponent(q); }
+    },
+    claude: {
+      name: "Claude", label: "Claude", note: "asks on open", auto: true,
+      url: function(q){ return "https://claude.ai/new?q=" + encodeURIComponent(q); }
+    },
+    perplexity: {
+      name: "Perplexity", label: "Perplexity", note: "asks on open", auto: true,
+      url: function(q){ return "https://www.perplexity.ai/search?q=" + encodeURIComponent(q); }
+    },
+    grok: {
+      name: "Grok", label: "Grok", note: "asks on open", auto: true,
+      url: function(q){ return "https://grok.com/?q=" + encodeURIComponent(q); }
+    }
+  };
+
+  // ---- base64url helpers (unicode safe) ----
+  function pack(s){
+    var bytes = new TextEncoder().encode(s), bin = "";
+    for (var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  function unpack(s){
+    s = s.replace(/-/g,"+").replace(/_/g,"/");
+    while (s.length % 4) s += "=";
+    var bin = atob(s), bytes = new Uint8Array(bin.length);
+    for (var i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  function baseUrl(){ return location.origin + location.pathname; }
+
+  function parseHash(){
+    var h = location.hash.replace(/^#/,"");
+    if (!h) return null;
+    var p = new URLSearchParams(h);
+    var q = p.get("q");
+    if (!q) return null;
+    try {
+      return {
+        q: unpack(q),
+        note: p.get("n") ? unpack(p.get("n")) : "",
+        t: TARGETS[p.get("t")] ? p.get("t") : "aimode"
+      };
+    } catch(e){ return null; }
+  }
+
+  var payload = parseHash();
+  if (payload) { runReveal(payload); } else { runMaker(); }
+
+  // =========== MAKER ===========
+  function runMaker(){
+    document.getElementById("maker").style.display = "block";
+
+    var qEl = document.getElementById("q"),
+        nEl = document.getElementById("note"),
+        chips = document.getElementById("chips"),
+        warn = document.getElementById("warn"),
+        out = document.getElementById("link"),
+        bCopy = document.getElementById("copy"),
+        bWa = document.getElementById("wa"),
+        bTest = document.getElementById("test"),
+        pick = "aimode", url = "";
+
+    Object.keys(TARGETS).forEach(function(k){
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.type = "button";
+      b.setAttribute("aria-pressed", k === pick);
+      b.innerHTML = TARGETS[k].label + "<small>" + TARGETS[k].note + "</small>";
+      b.onclick = function(){
+        pick = k;
+        [].forEach.call(chips.children, function(c,i){
+          c.setAttribute("aria-pressed", Object.keys(TARGETS)[i] === k);
+        });
+        build();
+      };
+      chips.appendChild(b);
+    });
+
+    function build(){
+      var q = qEl.value.trim(), n = nEl.value.trim();
+      warn.className = TARGETS[pick].warn ? "warn on" : "warn";
+      warn.textContent = TARGETS[pick].warn || "";
+
+      if (!q){
+        url = "";
+        out.textContent = "Type a question above.";
+        bCopy.disabled = bWa.disabled = bTest.disabled = true;
+        return;
+      }
+      url = baseUrl() + "#q=" + pack(q) + "&t=" + pick + (n ? "&n=" + pack(n) : "");
+      out.textContent = url;
+      bCopy.disabled = bWa.disabled = bTest.disabled = false;
+    }
+
+    qEl.addEventListener("input", build);
+    nEl.addEventListener("input", build);
+    build();
+
+    bCopy.onclick = function(){
+      navigator.clipboard.writeText(url).then(function(){
+        bCopy.textContent = "Copied";
+        setTimeout(function(){ bCopy.textContent = "Copy link"; }, 1600);
+      }, function(){
+        bCopy.textContent = "Select it above and copy";
+      });
+    };
+    bWa.onclick = function(){
+      var msg = (nEl.value.trim() ? nEl.value.trim() + "\n" : "") + url;
+      window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
+    };
+    bTest.onclick = function(){ location.href = url; location.reload(); };
+  }
+
+  // =========== REVEAL ===========
+  function runReveal(d){
+    document.getElementById("maker").style.display = "none";
+    document.getElementById("reveal").className = "on";
+
+    var t = TARGETS[d.t], dest = t.url(d.q);
+    document.getElementById("rName").textContent = t.name;
+    document.getElementById("mine").href = baseUrl();
+
+    if (d.note){
+      var n = document.getElementById("rNote");
+      n.textContent = d.note;
+      n.hidden = false;
+    }
+
+    var typed = document.getElementById("typed"),
+        send = document.getElementById("rSend"),
+        status = document.getElementById("rStatus"),
+        openBtn = document.getElementById("openBtn"),
+        caret = document.createElement("span");
+    caret.className = "caret";
+
+    var slow = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function finish(){
+      caret.remove();
+      send.className = "send hot";
+      if (t.auto){
+        status.innerHTML = 'Sending to ' + t.name + '\u2026 <a href="' + dest + '">go now</a>';
+        setTimeout(function(){ location.href = dest; }, 900);
+      } else {
+        document.getElementById("rTease").textContent = "Copy this, then paste it into Gemini.";
+        status.textContent = t.name + " can't be handed a question through a link, so tap below \u2014 the question goes to your clipboard and Gemini opens. Long-press the box and paste.";
+        openBtn.className = "on";
+        openBtn.textContent = "Copy question and open " + t.name;
+        openBtn.onclick = function(){
+          var go = function(){ location.href = dest; };
+          if (navigator.clipboard) navigator.clipboard.writeText(d.q).then(go, go);
+          else go();
+        };
+      }
+    }
+
+    if (!slow){
+      typed.textContent = d.q;
+      setTimeout(finish, 700);
+      return;
+    }
+
+    typed.appendChild(document.createTextNode(""));
+    typed.appendChild(caret);
+    var i = 0, txt = typed.firstChild;
+    (function tick(){
+      if (i >= d.q.length){ setTimeout(finish, 550); return; }
+      var ch = d.q[i++];
+      txt.nodeValue += ch;
+      setTimeout(tick, ch === " " ? 26 : (/[.,?!]/.test(ch) ? 190 : 34));
+    })();
+  }
+})();
+</script>
+</body>
+</html>

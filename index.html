@@ -49,7 +49,7 @@ body{background:var(--paper);color:var(--ink);font:400 16px/1.6 var(--sans);-web
 html[lang="hi"] body{line-height:1.75}
 .wrap{max-width:660px;margin:0 auto;padding:40px 22px 72px}
 h1{font:700 clamp(34px,7vw,52px)/1.02 var(--disp);letter-spacing:-.025em;margin:0 0 12px}
-h1 em{font-style:normal;background:var(--signal);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+h1 em,.hl{font-style:normal;background:var(--signal);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .sub{color:var(--ink-soft);margin:0 0 34px;max-width:46ch}
 label{display:block;font-weight:600;font-size:13px;margin:0 0 7px}
 .hint{font-weight:400;color:var(--ink-soft)}
@@ -62,7 +62,7 @@ textarea{min-height:104px;resize:vertical;line-height:1.5}
 textarea:focus,input[type=text]:focus,select:focus,button:focus-visible,a:focus-visible{outline:2.5px solid var(--ink);outline-offset:2px;border-color:var(--ink)}
 .field{margin-bottom:26px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:100px;padding:9px 15px;cursor:pointer}
+.chip{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:100px;padding:9px 15px;cursor:pointer;text-align:left}
 .chip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .chip small{display:block;font-size:11px;font-weight:400;opacity:.65;margin-top:2px}
 .warn{font-size:13px;color:var(--ink-soft);border-left:3px solid var(--signal);padding:8px 0 8px 12px;margin:12px 0 0;display:none}
@@ -111,7 +111,7 @@ html[lang="hi"] .tease{line-height:1.3}
 
 <main class="wrap" id="maker">
   <h1>Let me <em>ask AI</em> for you.</h1>
-  <p class="sub">Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language.</p>
+  <p class="sub">Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language. Kindly or otherwise.</p>
 
   <div class="field">
     <label for="q">The question they asked you</label>
@@ -125,8 +125,13 @@ html[lang="hi"] .tease{line-height:1.3}
   </div>
 
   <div class="field">
+    <label>Tone</label>
+    <div class="chips" id="modes"></div>
+  </div>
+
+  <div class="field">
     <label for="note">A line from you <span class="hint">— optional</span></label>
-    <input type="text" id="note" maxlength="90" placeholder="माँ, ये मुझसे पूछने से आसान है 🙂">
+    <input type="text" id="note" maxlength="90">
   </div>
 
   <div class="field">
@@ -146,6 +151,7 @@ html[lang="hi"] .tease{line-height:1.3}
   </div>
 
   <div class="foot">
+    <p><strong>Warm or cheeky.</strong> Warm types quickly, says something kind, and gets out of the way. Cheeky types slowly, makes them watch, and lands a punchline before the redirect. Same link, two very different receipts.</p>
     <p><strong>How the language works.</strong> None of these chatbots let a link set the reply language, so the instruction is added to the question itself. Google AI Mode also gets <code>hl=</code> so its own buttons and labels come up in the same language.</p>
     <p><strong>How the link works.</strong> The question is packed into the part after the <code>#</code>, so it never reaches a server — not even yours. This whole thing is one static file with no backend.</p>
     <p><strong>About Gemini.</strong> Google's Gemini app ignores prompts passed in a URL. Google AI Mode runs on Gemini and does accept them, so that's the default. If you pick the Gemini app anyway, the link copies the question to their clipboard and they paste it.</p>
@@ -155,7 +161,7 @@ html[lang="hi"] .tease{line-height:1.3}
 <div id="reveal">
   <div class="stage">
     <p class="note" id="rNote" hidden></p>
-    <p class="tease" id="rTease">Here, I'll type it for you.</p>
+    <p class="tease" id="rTease"></p>
     <div class="mock">
       <div class="mock-bar"><span class="dot"></span><span id="rName">Google AI Mode</span></div>
       <div class="mock-body">
@@ -176,34 +182,102 @@ html[lang="hi"] .tease{line-height:1.3}
 (function(){
   "use strict";
 
-  /* ---------- answer languages ---------- */
-  /* suffix = appended to the question. hl = Google interface code. ui = reveal-page strings. */
+  /* =========================================================
+     TONE MODES
+     Mode changes wording, typing speed, and how long the page
+     holds before redirecting. Cheeky makes you wait; warm doesn't.
+     ========================================================= */
+  var MODES = {
+    warm:   { label:"Warm",   note:"for family",        cps:24, hold:1000 },
+    cheeky: { label:"Cheeky", note:"for the guilty",    cps:46, hold:2400 }
+  };
+
+  /* =========================================================
+     COPY  —  COPY[lang][mode]
+     Falls back to English for any language without a block.
+     {name} is replaced with the chatbot's name.
+     ========================================================= */
+  var COPY = {
+    en: {
+      warm: {
+        tease:"Here, I'll type it for you.",
+        punch:"That's all it takes.",
+        sending:"Sending to {name}\u2026",
+        now:"go now", skip:"Skip",
+        pasteTease:"Copy this, then paste it into Gemini.",
+        pasteBody:"{name} can't be handed a question through a link, so tap below \u2014 the question goes to your clipboard and Gemini opens. Long-press the box and paste.",
+        pasteBtn:"Copy question and open {name}",
+        mine:"Make one of these yourself"
+      },
+      cheeky: {
+        tease:"Let me ask that for you.",
+        punch:"Was that so hard?",
+        sending:"Off you go to {name}\u2026",
+        now:"fine, take me there", skip:"Skip",
+        pasteTease:"You'll have to paste it. Gemini's fault, not mine.",
+        pasteBody:"{name} refuses questions sent by link, so tap below \u2014 it copies the question and opens Gemini. Long-press the box, paste, done.",
+        pasteBtn:"Copy question and open {name}",
+        mine:"Make one of these for someone"
+      }
+    },
+    hi: {
+      warm: {
+        tease:"लीजिए, मैं आपके लिए टाइप कर देता हूँ।",
+        punch:"बस इतना ही करना होता है।",
+        sending:"{name} पर भेजा जा रहा है\u2026",
+        now:"अभी खोलें", skip:"छोड़ें",
+        pasteTease:"इसे कॉपी करके Gemini में पेस्ट कीजिए।",
+        pasteBody:"Gemini को लिंक से सवाल नहीं भेजा जा सकता। नीचे दबाइए \u2014 सवाल कॉपी हो जाएगा और Gemini खुल जाएगा। फिर बॉक्स को देर तक दबाकर पेस्ट कीजिए।",
+        pasteBtn:"सवाल कॉपी करके {name} खोलें",
+        mine:"अपना ऐसा लिंक बनाएँ"
+      },
+      cheeky: {
+        tease:"चलिए, मैं ही पूछ देता हूँ।",
+        punch:"इतना मुश्किल था क्या?",
+        sending:"{name} पर भेजा जा रहा है\u2026",
+        now:"ठीक है, ले चलिए", skip:"छोड़ें",
+        pasteTease:"पेस्ट तो करना ही पड़ेगा। Gemini की गलती है, मेरी नहीं।",
+        pasteBody:"{name} लिंक से भेजे सवाल नहीं लेता। नीचे दबाइए \u2014 सवाल कॉपी होगा और Gemini खुलेगा। बॉक्स देर तक दबाकर पेस्ट कीजिए।",
+        pasteBtn:"सवाल कॉपी करके {name} खोलें",
+        mine:"किसी के लिए ऐसा लिंक बनाएँ"
+      }
+    },
+    "hi-latn": {
+      warm: {
+        tease:"Lijiye, main aapke liye type kar deta hoon.",
+        punch:"Bas itna hi karna hota hai.",
+        sending:"{name} par bhej rahe hain\u2026",
+        now:"abhi kholein", skip:"chhodein",
+        pasteTease:"Ise copy karke Gemini mein paste kijiye.",
+        pasteBody:"Gemini ko link se sawaal nahi bheja ja sakta. Neeche dabaiye \u2014 sawaal copy ho jayega aur Gemini khul jayega. Phir box ko der tak dabakar paste kijiye.",
+        pasteBtn:"Sawaal copy karke {name} kholein",
+        mine:"Apna aisa link banaiye"
+      },
+      cheeky: {
+        tease:"Chaliye, main hi pooch deta hoon.",
+        punch:"Itna mushkil tha kya?",
+        sending:"{name} par bhej rahe hain\u2026",
+        now:"theek hai, le chaliye", skip:"chhodein",
+        pasteTease:"Paste to karna hi padega. Gemini ki galti hai, meri nahi.",
+        pasteBody:"{name} link se bheje sawaal nahi leta. Neeche dabaiye \u2014 sawaal copy hoga aur Gemini khulega. Box der tak dabakar paste kijiye.",
+        pasteBtn:"Sawaal copy karke {name} kholein",
+        mine:"Kisi ke liye aisa link banaiye"
+      }
+    }
+  };
+
+  var NOTE_PLACEHOLDER = {
+    warm:   "माँ, ये मुझसे पूछने से आसान है \uD83D\uDE42",
+    cheeky: "You're welcome."
+  };
+
+  /* ---------------- answer languages ---------------- */
   var LANGS = {
     "":       { label:"English (no instruction added)", suffix:"", hl:"" },
     "hi":     { label:"हिंदी — Hindi", hl:"hi", htmlLang:"hi",
-                suffix:"कृपया इसका उत्तर हिंदी में, आसान शब्दों में और संक्षेप में दें।",
-                ui:{
-                  tease:"लीजिए, मैं आपके लिए टाइप कर देता हूँ।",
-                  sending:"{name} पर भेजा जा रहा है\u2026",
-                  now:"अभी खोलें",
-                  skip:"छोड़ें",
-                  pasteTease:"इसे कॉपी करके Gemini में पेस्ट कीजिए।",
-                  pasteBody:"Gemini को लिंक से सवाल नहीं भेजा जा सकता। नीचे दबाइए — सवाल कॉपी हो जाएगा और Gemini खुल जाएगा। फिर बॉक्स को देर तक दबाकर पेस्ट कीजिए।",
-                  pasteBtn:"सवाल कॉपी करके {name} खोलें",
-                  mine:"अपना ऐसा लिंक बनाएँ"
-                } },
+                suffix:"कृपया इसका उत्तर हिंदी में, आसान शब्दों में और संक्षेप में दें।" },
     "hi-latn":{ label:"Hindi in English letters (Hinglish)", hl:"hi",
-                suffix:"Please answer in Hindi, but write it using English letters (Roman script), not Devanagari. Keep it short and simple.",
-                ui:{
-                  tease:"Lijiye, main aapke liye type kar deta hoon.",
-                  sending:"{name} par bhej rahe hain\u2026",
-                  now:"abhi kholein",
-                  skip:"chhodein",
-                  pasteTease:"Ise copy karke Gemini mein paste kijiye.",
-                  pasteBody:"Gemini ko link se sawaal nahi bheja ja sakta. Neeche dabaiye — sawaal copy ho jayega aur Gemini khul jayega. Phir box ko der tak dabakar paste kijiye.",
-                  pasteBtn:"Sawaal copy karke {name} kholein",
-                  mine:"Apna aisa link banaiye"
-                } },
+                suffix:"Please answer in Hindi, but write it using English letters (Roman script), not Devanagari. Keep it short and simple." },
     "ta":     { label:"தமிழ் — Tamil", hl:"ta", htmlLang:"ta", suffix:"தயவுசெய்து இதற்கு தமிழில், எளிய வார்த்தைகளில், சுருக்கமாக பதில் அளிக்கவும்." },
     "te":     { label:"తెలుగు — Telugu", hl:"te", htmlLang:"te", suffix:"దయచేసి దీనికి తెలుగులో, సులభమైన మాటల్లో, క్లుప్తంగా సమాధానం ఇవ్వండి." },
     "bn":     { label:"বাংলা — Bengali", hl:"bn", htmlLang:"bn", suffix:"অনুগ্রহ করে এর উত্তর বাংলায়, সহজ ভাষায় ও সংক্ষেপে দিন।" },
@@ -213,17 +287,6 @@ html[lang="hi"] .tease{line-height:1.3}
     "ml":     { label:"മലയാളം — Malayalam", hl:"ml", htmlLang:"ml", suffix:"ദയവായി ഇതിന് മലയാളത്തിൽ, ലളിതമായ വാക്കുകളിൽ, ചുരുക്കി മറുപടി നൽകുക." },
     "pa":     { label:"ਪੰਜਾਬੀ — Punjabi", hl:"pa", htmlLang:"pa", suffix:"ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਦਾ ਜਵਾਬ ਪੰਜਾਬੀ ਵਿੱਚ, ਸੌਖੇ ਸ਼ਬਦਾਂ ਵਿੱਚ ਅਤੇ ਸੰਖੇਪ ਵਿੱਚ ਦਿਓ।" },
     "ur":     { label:"اردو — Urdu", hl:"ur", htmlLang:"ur", suffix:"براہ کرم اس کا جواب اردو میں، آسان الفاظ میں اور مختصر دیں۔" }
-  };
-
-  var EN_UI = {
-    tease:"Here, I'll type it for you.",
-    sending:"Sending to {name}\u2026",
-    now:"go now",
-    skip:"Skip",
-    pasteTease:"Copy this, then paste it into Gemini.",
-    pasteBody:"{name} can't be handed a question through a link, so tap below \u2014 the question goes to your clipboard and Gemini opens. Long-press the box and paste.",
-    pasteBtn:"Copy question and open {name}",
-    mine:"Make one of these yourself"
   };
 
   var TARGETS = {
@@ -242,6 +305,7 @@ html[lang="hi"] .tease{line-height:1.3}
       url:function(q){ return "https://grok.com/?q=" + encodeURIComponent(q); } }
   };
 
+  /* ---------------- helpers ---------------- */
   function pack(s){
     var b = new TextEncoder().encode(s), bin = "";
     for (var i=0;i<b.length;i++) bin += String.fromCharCode(b[i]);
@@ -256,10 +320,19 @@ html[lang="hi"] .tease{line-height:1.3}
   }
   function baseUrl(){ return location.origin + location.pathname; }
   function fill(s, name){ return s.replace("{name}", name); }
-
+  function copyFor(lang, mode){
+    var byLang = COPY[lang] || COPY.en;
+    return byLang[mode] || byLang.warm || COPY.en.warm;
+  }
   function fullPrompt(q, langKey){
     var L = LANGS[langKey];
     return (L && L.suffix) ? q.trim() + "\n\n" + L.suffix : q.trim();
+  }
+  function pref(k, v){
+    try {
+      if (v === undefined) return localStorage.getItem(k);
+      localStorage.setItem(k, v);
+    } catch(e){ return null; }
   }
 
   function parseHash(){
@@ -272,7 +345,8 @@ html[lang="hi"] .tease{line-height:1.3}
         q: unpack(p.get("q")),
         note: p.get("n") ? unpack(p.get("n")) : "",
         t: TARGETS[p.get("t")] ? p.get("t") : "aimode",
-        l: LANGS[p.get("l")] ? p.get("l") : ""
+        l: LANGS[p.get("l")] ? p.get("l") : "",
+        m: MODES[p.get("m")] ? p.get("m") : "warm"
       };
     } catch(e){ return null; }
   }
@@ -280,7 +354,7 @@ html[lang="hi"] .tease{line-height:1.3}
   var payload = parseHash();
   if (payload) runReveal(payload); else runMaker();
 
-  /* =============== MAKER =============== */
+  /* ===================== MAKER ===================== */
   function runMaker(){
     document.getElementById("maker").style.display = "block";
 
@@ -288,13 +362,14 @@ html[lang="hi"] .tease{line-height:1.3}
         nEl = document.getElementById("note"),
         lEl = document.getElementById("lang"),
         prev = document.getElementById("preview"),
+        modeBox = document.getElementById("modes"),
         chips = document.getElementById("chips"),
         warn = document.getElementById("warn"),
         out = document.getElementById("link"),
         bCopy = document.getElementById("copy"),
         bWa = document.getElementById("wa"),
         bTest = document.getElementById("test"),
-        pick = "aimode", url = "";
+        pick = "aimode", mode = "warm", url = "";
 
     Object.keys(LANGS).forEach(function(k){
       var o = document.createElement("option");
@@ -302,6 +377,23 @@ html[lang="hi"] .tease{line-height:1.3}
       lEl.appendChild(o);
     });
     lEl.value = "hi";
+
+    Object.keys(MODES).forEach(function(k){
+      var b = document.createElement("button");
+      b.className = "chip"; b.type = "button";
+      b.setAttribute("aria-pressed", k === mode);
+      b.innerHTML = MODES[k].label + "<small>" + MODES[k].note + "</small>";
+      b.onclick = function(){
+        mode = k;
+        [].forEach.call(modeBox.children, function(c,i){
+          c.setAttribute("aria-pressed", Object.keys(MODES)[i] === k);
+        });
+        nEl.placeholder = NOTE_PLACEHOLDER[k];
+        build();
+      };
+      modeBox.appendChild(b);
+    });
+    nEl.placeholder = NOTE_PLACEHOLDER[mode];
 
     Object.keys(TARGETS).forEach(function(k){
       var b = document.createElement("button");
@@ -339,6 +431,7 @@ html[lang="hi"] .tease{line-height:1.3}
       }
       url = baseUrl() + "#q=" + pack(q) + "&t=" + pick
           + (l ? "&l=" + l : "")
+          + (mode !== "warm" ? "&m=" + mode : "")
           + (n ? "&n=" + pack(n) : "");
       out.textContent = url;
       bCopy.disabled = bWa.disabled = bTest.disabled = false;
@@ -362,22 +455,32 @@ html[lang="hi"] .tease{line-height:1.3}
     bTest.onclick = function(){ location.href = url; location.reload(); };
   }
 
-  /* =============== REVEAL =============== */
+  /* ===================== REVEAL ===================== */
   function runReveal(d){
     document.getElementById("maker").style.display = "none";
     document.getElementById("reveal").className = "on";
 
-    var L = LANGS[d.l] || LANGS[""],
-        UI = L.ui || EN_UI,
-        t = TARGETS[d.t],
+    var L  = LANGS[d.l] || LANGS[""],
+        M  = MODES[d.m],
+        UI = copyFor(d.l, d.m),
+        t  = TARGETS[d.t],
         prompt = fullPrompt(d.q, d.l),
         dest = t.url(prompt, L.hl);
 
     if (L.htmlLang) document.documentElement.lang = L.htmlLang;
     if (d.l === "ur") document.documentElement.dir = "rtl";
 
+    var tease = document.getElementById("rTease"),
+        typed = document.getElementById("typed"),
+        send = document.getElementById("rSend"),
+        status = document.getElementById("rStatus"),
+        openBtn = document.getElementById("openBtn"),
+        skipBtn = document.getElementById("skip"),
+        caret = document.createElement("span");
+    caret.className = "caret";
+
     document.getElementById("rName").textContent = t.name;
-    document.getElementById("rTease").textContent = UI.tease;
+    tease.textContent = UI.tease;
 
     var mine = document.getElementById("mine");
     mine.href = baseUrl();
@@ -387,21 +490,6 @@ html[lang="hi"] .tease{line-height:1.3}
       var n = document.getElementById("rNote");
       n.textContent = d.note;
       n.hidden = false;
-    }
-
-    var typed = document.getElementById("typed"),
-        send = document.getElementById("rSend"),
-        status = document.getElementById("rStatus"),
-        openBtn = document.getElementById("openBtn"),
-        skipBtn = document.getElementById("skip"),
-        caret = document.createElement("span");
-    caret.className = "caret";
-
-    function pref(k, v){
-      try {
-        if (v === undefined) return localStorage.getItem(k);
-        localStorage.setItem(k, v);
-      } catch(e){ return null; }
     }
 
     var animate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -418,14 +506,22 @@ html[lang="hi"] .tease{line-height:1.3}
       typed.textContent = prompt;
       caret.remove();
       send.className = "send hot";
+
       if (t.auto){
+        // punchline lands in the yellow, then we go
+        tease.textContent = "";
+        var hl = document.createElement("span");
+        hl.className = "hl";
+        hl.textContent = UI.punch;
+        tease.appendChild(hl);
+
         status.textContent = fill(UI.sending, t.name) + " ";
         var a = document.createElement("a");
         a.href = dest; a.textContent = UI.now;
         status.appendChild(a);
-        setTimeout(function(){ location.href = dest; }, 1100);
+        setTimeout(function(){ location.href = dest; }, M.hold);
       } else {
-        document.getElementById("rTease").textContent = UI.pasteTease;
+        tease.textContent = UI.pasteTease;
         status.textContent = fill(UI.pasteBody, t.name);
         openBtn.className = "on";
         openBtn.textContent = fill(UI.pasteBtn, t.name);
@@ -438,7 +534,6 @@ html[lang="hi"] .tease{line-height:1.3}
     }
 
     if (!animate){
-      typed.textContent = prompt;
       setTimeout(finish, 700);
       return;
     }
@@ -449,13 +544,17 @@ html[lang="hi"] .tease{line-height:1.3}
     typed.appendChild(txt);
     typed.appendChild(caret);
 
-    var i = 0;
+    var base = M.cps, i = 0;
     (function tick(){
       if (done) return;
-      if (i >= prompt.length){ setTimeout(finish, 550); return; }
+      if (i >= prompt.length){ setTimeout(finish, base * 14); return; }
       var ch = prompt[i++];
       txt.nodeValue += ch;
-      setTimeout(tick, ch === "\n" ? 150 : ch === " " ? 24 : /[.,?!।]/.test(ch) ? 170 : 32);
+      var wait = ch === "\n" ? base * 5
+               : ch === " "  ? base * 0.75
+               : /[.,?!।]/.test(ch) ? base * 5
+               : base;
+      setTimeout(tick, wait);
     })();
   }
 })();

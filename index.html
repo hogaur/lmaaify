@@ -3,198 +3,592 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prefill a prompt with a URL: the parameter for every AI chatbot</title>
-<meta name="description" content="Which AI chatbots accept a prompt in the URL, and which quietly ignore it. Working ?q= formats for ChatGPT, Claude, Perplexity, Grok and Google AI Mode — plus why Gemini and Microsoft Copilot don't work. Tested links, updated.">
-<link rel="canonical" href="https://hariomgaur.in/lmaaify/prompt-url-formats/">
+<title>Let me ask AI for you — send a question as a link</title>
+<meta name="description" content="Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in Hindi, Tamil, Bengali or nine other languages. Works with Google AI Mode, ChatGPT, Claude, Perplexity and Grok.">
+<link rel="canonical" href="https://hariomgaur.in/lmaaify/">
 <meta name="theme-color" content="#f5c518">
 
-<meta property="og:type" content="article">
+<meta property="og:type" content="website">
 <meta property="og:site_name" content="Let me ask AI for you">
-<meta property="og:url" content="https://hariomgaur.in/lmaaify/prompt-url-formats/">
-<meta property="og:title" content="Prefill a prompt with a URL: the parameter for every AI chatbot">
-<meta property="og:description" content="Which chatbots accept a prompt in the URL and which quietly ignore it. Working formats, tested links, and the two that don't work at all.">
+<meta property="og:url" content="https://hariomgaur.in/lmaaify/">
+<meta property="og:title" content="Let me ask AI for you">
+<meta property="og:description" content="Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language.">
 <meta property="og:image" content="https://hariomgaur.in/lmaaify/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Let me ask AI for you, above a chat box holding a question written in Hindi.">
+<meta property="og:locale" content="en_IN">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Prefill a prompt with a URL: the parameter for every AI chatbot">
-<meta name="twitter:description" content="Which chatbots accept a prompt in the URL and which quietly ignore it. Working formats and tested links.">
+<meta name="twitter:title" content="Let me ask AI for you">
+<meta name="twitter:description" content="Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language.">
 <meta name="twitter:image" content="https://hariomgaur.in/lmaaify/og.png">
 
-<link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#14232e; --ink-soft:#4a6072; --paper:#e9ece5; --panel:#fdfdfb;
-  --signal:#f5c518; --line:#c9cfc6; --green:#1f7a5c; --red:#a4343a; --r:3px;
-  --sans:Inter,system-ui,sans-serif;
-  --disp:"Bricolage Grotesque",Georgia,serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ink:#14232e;
+  --ink-soft:#4a6072;
+  --paper:#e9ece5;
+  --panel:#fdfdfb;
+  --signal:#f5c518;
+  --steel:#5b7080;
+  --green:#1f7a5c;
+  --line:#c9cfc6;
+  --r:3px;
+  --sans:Inter,"Noto Sans Devanagari",system-ui,sans-serif;
+  --disp:"Bricolage Grotesque","Noto Sans Devanagari",Georgia,serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--paper);color:var(--ink);font:400 17px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
-.wrap{max-width:720px;margin:0 auto;padding:36px 22px 80px}
-a{color:var(--ink)}
-.crumb{font-size:14px;color:var(--ink-soft);margin:0 0 26px}
-h1{font:700 clamp(30px,6vw,44px)/1.06 var(--disp);letter-spacing:-.025em;margin:0 0 16px}
-h2{font:700 clamp(21px,3.6vw,26px)/1.2 var(--disp);letter-spacing:-.015em;margin:46px 0 12px}
-h3{font:600 18px/1.35 var(--sans);margin:28px 0 6px}
-.lede{font-size:19px;color:var(--ink-soft);margin:0 0 10px}
-.dateline{font-size:14px;color:var(--ink-soft);margin:0 0 32px;padding-bottom:22px;border-bottom:1.5px solid var(--line)}
-p{margin:0 0 15px}
-code{font:500 14.5px/1.4 var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:1px 5px;word-break:break-all}
-.tablewrap{overflow-x:auto;margin:22px 0 10px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--panel)}
-table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
-th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);background:var(--paper)}
-tr:last-child td{border-bottom:0}
-td code{font-size:13px;background:none;border:0;padding:0}
-.tag{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:100px;white-space:nowrap}
-.ok{background:#d7ead9;color:var(--green)}
-.no{background:#f2dcdd;color:var(--red)}
-.try{font-size:13px;font-weight:600;white-space:nowrap}
-.callout{background:var(--panel);border-left:4px solid var(--signal);padding:16px 18px;margin:24px 0;border-radius:0 var(--r) var(--r) 0}
-.callout p:last-child{margin-bottom:0}
-.callout strong{font-weight:600}
-.cta{background:var(--signal);padding:22px;border-radius:var(--r);margin:44px 0 0}
-.cta h2{margin:0 0 8px;font-size:23px}
-.cta p{margin:0 0 14px;font-size:16px}
-.cta a{font-weight:600}
-ul{margin:0 0 15px;padding-left:22px}
-li{margin-bottom:7px}
-.foot{margin-top:52px;padding-top:22px;border-top:1.5px solid var(--line);font-size:14px;color:var(--ink-soft)}
-.foot a{color:var(--ink-soft)}
-</style>
-<script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"TechArticle",
-  "headline":"Prefill a prompt with a URL: the parameter for every AI chatbot",
-  "description":"Which AI chatbots accept a prompt passed in the URL, which ignore it, and the exact working formats.",
-  "datePublished":"2026-09-04",
-  "dateModified":"2026-09-04",
-  "mainEntityOfPage":"https://hariomgaur.in/lmaaify/prompt-url-formats/",
-  "image":"https://hariomgaur.in/lmaaify/og.png"
+body{background:var(--paper);color:var(--ink);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+html[lang="hi"] body{line-height:1.75}
+.wrap{max-width:660px;margin:0 auto;padding:40px 22px 72px}
+h1{font:700 clamp(34px,7vw,52px)/1.02 var(--disp);letter-spacing:-.025em;margin:0 0 12px}
+h1 em,.hl{font-style:normal;background:var(--signal);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sub{color:var(--ink-soft);margin:0 0 34px;max-width:46ch}
+label{display:block;font-weight:600;font-size:13px;margin:0 0 7px}
+.hint{font-weight:400;color:var(--ink-soft)}
+textarea,input[type=text],select{
+  width:100%;font:inherit;color:var(--ink);background:var(--panel);
+  border:1.5px solid var(--line);border-radius:var(--r);padding:13px 14px;
 }
-</script>
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 19px) 22px,calc(100% - 13px) 22px;background-size:6px 6px;background-repeat:no-repeat}
+textarea{min-height:104px;resize:vertical;line-height:1.5}
+textarea:focus,input[type=text]:focus,select:focus,button:focus-visible,a:focus-visible{outline:2.5px solid var(--ink);outline-offset:2px;border-color:var(--ink)}
+.field{margin-bottom:26px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:100px;padding:9px 15px;cursor:pointer;text-align:left}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip small{display:block;font-size:11px;font-weight:400;opacity:.65;margin-top:2px}
+.warn{font-size:13px;color:var(--ink-soft);border-left:3px solid var(--signal);padding:8px 0 8px 12px;margin:12px 0 0;display:none}
+.warn.on{display:block}
+.preview{font-size:13.5px;color:var(--ink-soft);margin:10px 0 0;padding:9px 12px;background:var(--panel);border:1.5px dashed var(--line);border-radius:var(--r);display:none}
+.preview.on{display:block}
+.out{border-top:1.5px solid var(--line);padding-top:26px;margin-top:8px}
+.link{font:500 13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px;word-break:break-all;color:var(--ink-soft);min-height:44px}
+.row{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+button.act{font:600 15px/1 var(--sans);border:1.5px solid var(--ink);border-radius:var(--r);padding:13px 20px;cursor:pointer;background:var(--panel);color:var(--ink)}
+button.act.primary{background:var(--signal);border-color:var(--ink)}
+button.act:disabled{opacity:.4;cursor:not-allowed}
+.foot{margin-top:52px;padding-top:22px;border-top:1.5px solid var(--line);font-size:13.5px;color:var(--ink-soft)}
+.foot p{margin:0 0 9px;max-width:56ch}
+.foot code{font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:2px}
+
+#reveal{display:none;min-height:100vh;place-items:center;padding:28px 22px}
+#reveal.on{display:grid}
+.stage{width:100%;max-width:560px}
+.note{font:500 19px/1.5 var(--sans);background:var(--signal);padding:14px 17px;border-radius:var(--r);margin:0 0 18px}
+.tease{font:700 clamp(24px,5.5vw,34px)/1.15 var(--disp);letter-spacing:-.02em;margin:0 0 22px}
+html[lang="hi"] .tease{line-height:1.3}
+.mock{background:var(--panel);border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.mock-bar{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1.5px solid var(--line);font-size:14px;font-weight:600;color:var(--ink-soft)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none}
+.mock-body{padding:20px 16px 16px;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
+.mock-input{display:flex;align-items:flex-end;gap:10px;border:1.5px solid var(--line);border-radius:22px;padding:12px 11px 12px 16px;background:var(--paper)}
+#typed{flex:1;font-size:19.5px;line-height:1.55;min-height:26px;word-break:break-word}
+.caret{display:inline-block;width:2px;height:1.05em;background:var(--ink);vertical-align:-2px;margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.send{width:38px;height:38px;flex:none;border-radius:50%;background:var(--line);display:grid;place-items:center;transition:background .18s}
+.send.hot{background:var(--signal)}
+.send svg{width:18px;height:18px}
+.status{margin-top:20px;font-size:17px;color:var(--ink-soft);min-height:26px}
+.status a{color:var(--ink)}
+#skip{display:none;margin:14px 0 0;background:none;border:0;padding:6px 0;font:500 15px/1 var(--sans);color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+#skip.on{display:inline-block}
+#openBtn{display:none;margin-top:18px;font-size:17px}
+#openBtn.on{display:inline-block}
+.small{margin-top:26px;font-size:13px;color:var(--ink-soft)}
+.small a{color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){.caret{animation:none}*{transition:none!important}}
+</style>
 </head>
 <body>
-<main class="wrap">
-  <p class="crumb"><a href="../">Let me ask AI for you</a> → Prompt URL formats</p>
 
-  <h1>Prefill a prompt with a URL</h1>
-  <p class="lede">You want to send someone a link that opens an AI chatbot with the question already asked. Most of them support it. Two of the biggest don't, and neither says so.</p>
-  <p class="dateline">Last verified 4 September 2026. None of these parameters are officially documented, so any of them can change without notice.</p>
+<main class="wrap" id="maker">
+  <h1>Let me <em>ask AI</em> for you.</h1>
+  <p class="sub">Turn a question into a link. They tap it, watch it get typed out, and land on the answer — in their own language. Kindly or otherwise.</p>
 
-  <p>Every format below is the same idea: put the question in the query string, URL-encode it, and the chatbot opens with the prompt loaded. What differs is whether it also <em>submits</em> the prompt, and whether the parameter is honoured at all.</p>
-
-  <div class="tablewrap">
-  <table>
-    <thead>
-      <tr><th>Service</th><th>Format</th><th>On open</th><th></th><th></th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Google AI Mode</strong></td>
-        <td><code>google.com/search?udm=50&amp;aep=11&amp;q=</code></td>
-        <td>Asks immediately</td>
-        <td><span class="tag ok">Works</span></td>
-        <td class="try"><a href="https://www.google.com/search?udm=50&amp;aep=11&amp;q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-      <tr>
-        <td><strong>ChatGPT</strong></td>
-        <td><code>chatgpt.com/?q=</code></td>
-        <td>Prefills and submits</td>
-        <td><span class="tag ok">Works</span></td>
-        <td class="try"><a href="https://chatgpt.com/?q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-      <tr>
-        <td><strong>Claude</strong></td>
-        <td><code>claude.ai/new?q=</code></td>
-        <td>Starts a new chat</td>
-        <td><span class="tag ok">Works</span></td>
-        <td class="try"><a href="https://claude.ai/new?q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-      <tr>
-        <td><strong>Perplexity</strong></td>
-        <td><code>perplexity.ai/search?q=</code></td>
-        <td>Runs the search</td>
-        <td><span class="tag ok">Works</span></td>
-        <td class="try"><a href="https://www.perplexity.ai/search?q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-      <tr>
-        <td><strong>Grok</strong></td>
-        <td><code>grok.com/?q=</code></td>
-        <td>Prefills and submits</td>
-        <td><span class="tag ok">Works</span></td>
-        <td class="try"><a href="https://grok.com/?q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-      <tr>
-        <td><strong>Gemini app</strong></td>
-        <td><code>gemini.google.com/app?q=</code></td>
-        <td>Opens empty</td>
-        <td><span class="tag no">Ignored</span></td>
-        <td class="try"><a href="https://gemini.google.com/app?q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-      <tr>
-        <td><strong>Microsoft Copilot</strong></td>
-        <td><code>copilot.microsoft.com/?q=</code></td>
-        <td>Opens empty</td>
-        <td><span class="tag no">Disabled</span></td>
-        <td class="try"><a href="https://copilot.microsoft.com/?q=What%20time%20is%20sunrise%20in%20Chennai%20tomorrow%3F" rel="nofollow noopener" target="_blank">Test</a></td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
-  <p style="font-size:14px;color:var(--ink-soft)">Test links carry a harmless sample question. Signed-out behaviour can differ from signed-in.</p>
-
-  <h2>Gemini ignores the prompt. AI Mode doesn't.</h2>
-  <p>This is the one that costs people an afternoon. Search for a way to prefill Gemini and you will find plenty of <code>gemini.google.com/app?q=…</code> links being passed around. Open one and Gemini loads with an empty box. The question is simply dropped.</p>
-  <p>Nothing you add to the URL fixes it. The links that appear to work belong to people running a browser extension that fills the box on their behalf, which does nothing for anyone you send the link to. Several tooling authors have resorted to simulated keystrokes and clipboard automation for exactly this reason.</p>
-  <p>The workaround isn't a workaround at all. <strong>Google AI Mode runs on Gemini and does accept a prompt in the URL.</strong> Same model, and the link actually works:</p>
-  <p><code>https://www.google.com/search?udm=50&amp;aep=11&amp;q=YOUR+PROMPT</code></p>
-  <p>The <code>udm=50</code> parameter is what routes a query to AI Mode rather than ordinary search results. If you'd rather not remember it, <code>google.com/ai</code> resolves to the same place.</p>
-
-  <h3>Setting the interface language</h3>
-  <p>Add <code>&amp;hl=hi</code> — or <code>ta</code>, <code>bn</code>, <code>mr</code>, and so on — and Google's own labels and follow-up suggestions come back in that language. It does <em>not</em> reliably control the language the model answers in. For that, put the instruction in the prompt itself; no chatbot on this list has a URL parameter for response language.</p>
-
-  <h2>Microsoft quietly switched Copilot off</h2>
-  <p>Copilot used to honour <code>?q=</code>, which let people wire it up as a browser search engine. That stopped working in late 2025: the parameter still loads the page, but the text appears only as a heading and the chat box stays empty, breaking the search-engine integration that Firefox derivatives relied on.</p>
-  <p>The reason is security rather than neglect. A prefill parameter that auto-runs is an attractive attack surface — a link arrives, gets clicked, and the model receives attacker-supplied instructions before the user has typed anything. Microsoft disabled the parameter without a public announcement after researchers demonstrated exactly that against Copilot.</p>
-
-  <h2>The security problem with all of these</h2>
-  <p>It's worth being clear-eyed, because this affects every working format in the table. Researchers have named the general pattern <em>parameter-to-prompt injection</em>: because these query parameters accept natural language rather than plain search terms, a crafted link can feed instructions straight to a model that has access to the recipient's data. The same class of flaw has turned up in Perplexity's Comet browser and in Microsoft 365 Copilot's enterprise search.</p>
-  <div class="callout">
-    <p><strong>What this means in practice.</strong> Treat a prompt link the way you'd treat any link: fine from someone you know, worth reading before you tap from someone you don't. The whole prompt is visible in the URL, so you can always see what it's about to ask before you open it.</p>
+  <div class="field">
+    <label for="q">The question they asked you</label>
+    <textarea id="q" placeholder="Which platform does the Vaigai Express leave from at Chennai Egmore, and how early should I get there?"></textarea>
   </div>
 
-  <h2>Getting the encoding right</h2>
-  <ul>
-    <li><strong>Encode the whole prompt.</strong> In JavaScript that's <code>encodeURIComponent(text)</code>. Spaces, question marks, ampersands and apostrophes all break the URL otherwise, and an unescaped <code>&amp;</code> silently truncates your prompt.</li>
-    <li><strong>Keep it under about 2,000 characters.</strong> There's no published limit, but browsers and CDNs start dropping long URLs somewhere past that.</li>
-    <li><strong>Non-Latin scripts are fine.</strong> Hindi, Tamil and Arabic all survive percent-encoding as UTF-8. They inflate the URL roughly threefold, which matters against the length ceiling.</li>
-    <li><strong>Newlines work.</strong> They encode as <code>%0A</code> and survive on every service in the table, so multi-line prompts are fine.</li>
-    <li><strong>Mobile is the fragile part.</strong> A tap on these links can be intercepted by an installed native app, which may not honour the query string the way the website does. Test on a phone, not just a desktop.</li>
-  </ul>
-
-  <h2>Why the formats drift</h2>
-  <p>None of this is documented by any of the vendors. Every parameter here was found by inspection, and Copilot is a live demonstration that a working format can be withdrawn overnight with no changelog. If you're building anything that depends on one, re-test it periodically and keep a fallback that copies the prompt to the clipboard instead.</p>
-
-  <div class="cta">
-    <h2>Don't want to build the URL yourself?</h2>
-    <p>The generator on this site turns a question into a shareable link, appends a reply-language instruction for a dozen Indian languages, and picks a target that actually works.</p>
-    <p><a href="../">Make a prompt link →</a></p>
+  <div class="field">
+    <label for="lang">Answer in</label>
+    <select id="lang"></select>
+    <p class="preview" id="preview"></p>
   </div>
 
-  <p class="foot">
-    Corrections welcome — if a format here has stopped working, or one is missing, the page is worth fixing.
-    <br><a href="../">Let me ask AI for you</a>
-  </p>
+  <div class="field">
+    <label>Tone</label>
+    <div class="chips" id="modes"></div>
+  </div>
+
+  <div class="field">
+    <label for="note">A line from you <span class="hint">— optional</span></label>
+    <input type="text" id="note" maxlength="90">
+  </div>
+
+  <div class="field">
+    <label>Where it should land</label>
+    <div class="chips" id="chips"></div>
+    <p class="warn" id="warn"></p>
+  </div>
+
+  <div class="out">
+    <label for="link">Your link</label>
+    <div class="link" id="link">Type a question above.</div>
+    <div class="row">
+      <button class="act primary" id="copy" disabled>Copy link</button>
+      <button class="act" id="wa" disabled>Send on WhatsApp</button>
+      <button class="act" id="test" disabled>Preview it</button>
+    </div>
+  </div>
+
+  <div class="out">
+    <label for="btnlink">And a button for next time <span class="hint">— send this once</span></label>
+    <p class="sub" style="margin:0 0 12px;font-size:14.5px">A page of their own, already set to this language. They can keep it on their home screen and stop needing you.</p>
+    <div class="link" id="btnlink"></div>
+    <div class="row">
+      <button class="act" id="bcopy">Copy button link</button>
+      <button class="act" id="bwa">Send on WhatsApp</button>
+      <button class="act" id="bopen">Open it</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <p><strong>The button.</strong> The second link opens a small page that does one thing: takes a question and sends it to Google AI Mode with the language instruction already attached. Added to a home screen it becomes an app icon, works offline until the moment it needs an answer, and takes dictation on Android.</p>
+    <p><strong>Warm or cheeky.</strong> Warm types quickly, says something kind, and gets out of the way. Cheeky types slowly, makes them watch, and lands a punchline before the redirect. Same link, two very different receipts.</p>
+    <p><strong>How the language works.</strong> None of these chatbots let a link set the reply language, so the instruction is added to the question itself. Google AI Mode also gets <code>hl=</code> so its own buttons and labels come up in the same language.</p>
+    <p><strong>How the link works.</strong> The question is packed into the part after the <code>#</code>, so it never reaches a server — not even yours. This whole thing is one static file with no backend.</p>
+    <p><strong>About Gemini.</strong> Google's Gemini app ignores prompts passed in a URL. Google AI Mode runs on Gemini and does accept them, so that's the default. If you pick the Gemini app anyway, the link copies the question to their clipboard and they paste it.</p>
+    <p><strong>Building your own?</strong> <a href="prompt-url-formats/">Every chatbot's prompt URL format</a> — which ones accept a question in the link, which quietly drop it, and how to encode it properly.</p>
+  </div>
 </main>
+
+<div id="reveal">
+  <div class="stage">
+    <p class="note" id="rNote" hidden></p>
+    <p class="tease" id="rTease"></p>
+    <div class="mock">
+      <div class="mock-bar"><span class="dot"></span><span id="rName">Google AI Mode</span></div>
+      <div class="mock-body">
+        <div class="mock-input">
+          <div id="typed"></div>
+          <div class="send" id="rSend"><svg viewBox="0 0 24 24" fill="none" stroke="#14232e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+        </div>
+      </div>
+    </div>
+    <button id="skip" type="button">Skip</button>
+    <p class="status" id="rStatus"></p>
+    <button class="act primary" id="openBtn">Open it</button>
+    <p class="small"><a href="#" id="mine">Make one of these yourself</a></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     TONE MODES
+     Mode changes wording, typing speed, and how long the page
+     holds before redirecting. Cheeky makes you wait; warm doesn't.
+     ========================================================= */
+  var MODES = {
+    warm:   { label:"Warm",   note:"for family",        cps:24, hold:1000 },
+    cheeky: { label:"Cheeky", note:"for the guilty",    cps:46, hold:2400 }
+  };
+
+  /* =========================================================
+     COPY  —  COPY[lang][mode]
+     Falls back to English for any language without a block.
+     {name} is replaced with the chatbot's name.
+     ========================================================= */
+  var COPY = {
+    en: {
+      warm: {
+        tease:"Here, I'll type it for you.",
+        punch:"That's all it takes.",
+        sending:"Sending to {name}\u2026",
+        now:"go now", skip:"Skip",
+        pasteTease:"Copy this, then paste it into Gemini.",
+        pasteBody:"{name} can't be handed a question through a link, so tap below \u2014 the question goes to your clipboard and Gemini opens. Long-press the box and paste.",
+        pasteBtn:"Copy question and open {name}",
+        mine:"Make one of these yourself"
+      },
+      cheeky: {
+        tease:"Let me ask that for you.",
+        punch:"Was that so hard?",
+        sending:"Off you go to {name}\u2026",
+        now:"fine, take me there", skip:"Skip",
+        pasteTease:"You'll have to paste it. Gemini's fault, not mine.",
+        pasteBody:"{name} refuses questions sent by link, so tap below \u2014 it copies the question and opens Gemini. Long-press the box, paste, done.",
+        pasteBtn:"Copy question and open {name}",
+        mine:"Make one of these for someone"
+      }
+    },
+    hi: {
+      warm: {
+        tease:"लीजिए, मैं आपके लिए टाइप कर देता हूँ।",
+        punch:"बस इतना ही करना होता है।",
+        sending:"{name} पर भेजा जा रहा है\u2026",
+        now:"अभी खोलें", skip:"छोड़ें",
+        pasteTease:"इसे कॉपी करके Gemini में पेस्ट कीजिए।",
+        pasteBody:"Gemini को लिंक से सवाल नहीं भेजा जा सकता। नीचे दबाइए \u2014 सवाल कॉपी हो जाएगा और Gemini खुल जाएगा। फिर बॉक्स को देर तक दबाकर पेस्ट कीजिए।",
+        pasteBtn:"सवाल कॉपी करके {name} खोलें",
+        mine:"अपना ऐसा लिंक बनाएँ"
+      },
+      cheeky: {
+        tease:"चलिए, मैं ही पूछ देता हूँ।",
+        punch:"इतना मुश्किल था क्या?",
+        sending:"{name} पर भेजा जा रहा है\u2026",
+        now:"ठीक है, ले चलिए", skip:"छोड़ें",
+        pasteTease:"पेस्ट तो करना ही पड़ेगा। Gemini की गलती है, मेरी नहीं।",
+        pasteBody:"{name} लिंक से भेजे सवाल नहीं लेता। नीचे दबाइए \u2014 सवाल कॉपी होगा और Gemini खुलेगा। बॉक्स देर तक दबाकर पेस्ट कीजिए।",
+        pasteBtn:"सवाल कॉपी करके {name} खोलें",
+        mine:"किसी के लिए ऐसा लिंक बनाएँ"
+      }
+    },
+    "hi-latn": {
+      warm: {
+        tease:"Lijiye, main aapke liye type kar deta hoon.",
+        punch:"Bas itna hi karna hota hai.",
+        sending:"{name} par bhej rahe hain\u2026",
+        now:"abhi kholein", skip:"chhodein",
+        pasteTease:"Ise copy karke Gemini mein paste kijiye.",
+        pasteBody:"Gemini ko link se sawaal nahi bheja ja sakta. Neeche dabaiye \u2014 sawaal copy ho jayega aur Gemini khul jayega. Phir box ko der tak dabakar paste kijiye.",
+        pasteBtn:"Sawaal copy karke {name} kholein",
+        mine:"Apna aisa link banaiye"
+      },
+      cheeky: {
+        tease:"Chaliye, main hi pooch deta hoon.",
+        punch:"Itna mushkil tha kya?",
+        sending:"{name} par bhej rahe hain\u2026",
+        now:"theek hai, le chaliye", skip:"chhodein",
+        pasteTease:"Paste to karna hi padega. Gemini ki galti hai, meri nahi.",
+        pasteBody:"{name} link se bheje sawaal nahi leta. Neeche dabaiye \u2014 sawaal copy hoga aur Gemini khulega. Box der tak dabakar paste kijiye.",
+        pasteBtn:"Sawaal copy karke {name} kholein",
+        mine:"Kisi ke liye aisa link banaiye"
+      }
+    }
+  };
+
+  var NOTE_PLACEHOLDER = {
+    warm:   "माँ, ये मुझसे पूछने से आसान है \uD83D\uDE42",
+    cheeky: "You're welcome."
+  };
+
+  /* ---------------- answer languages ---------------- */
+  var LANGS = {
+    "":       { label:"English (no instruction added)", suffix:"", hl:"" },
+    "hi":     { label:"हिंदी — Hindi", hl:"hi", htmlLang:"hi",
+                suffix:"कृपया इसका उत्तर हिंदी में, आसान शब्दों में और संक्षेप में दें।" },
+    "hi-latn":{ label:"Hindi in English letters (Hinglish)", hl:"hi",
+                suffix:"Please answer in Hindi, but write it using English letters (Roman script), not Devanagari. Keep it short and simple." },
+    "ta":     { label:"தமிழ் — Tamil", hl:"ta", htmlLang:"ta", suffix:"தயவுசெய்து இதற்கு தமிழில், எளிய வார்த்தைகளில், சுருக்கமாக பதில் அளிக்கவும்." },
+    "te":     { label:"తెలుగు — Telugu", hl:"te", htmlLang:"te", suffix:"దయచేసి దీనికి తెలుగులో, సులభమైన మాటల్లో, క్లుప్తంగా సమాధానం ఇవ్వండి." },
+    "bn":     { label:"বাংলা — Bengali", hl:"bn", htmlLang:"bn", suffix:"অনুগ্রহ করে এর উত্তর বাংলায়, সহজ ভাষায় ও সংক্ষেপে দিন।" },
+    "mr":     { label:"मराठी — Marathi", hl:"mr", htmlLang:"mr", suffix:"कृपया याचे उत्तर मराठीत, सोप्या शब्दांत आणि थोडक्यात द्या." },
+    "gu":     { label:"ગુજરાતી — Gujarati", hl:"gu", htmlLang:"gu", suffix:"કૃપા કરીને આનો જવાબ ગુજરાતીમાં, સરળ શબ્દોમાં અને ટૂંકમાં આપો." },
+    "kn":     { label:"ಕನ್ನಡ — Kannada", hl:"kn", htmlLang:"kn", suffix:"ದಯವಿಟ್ಟು ಇದಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ, ಸರಳ ಪದಗಳಲ್ಲಿ ಮತ್ತು ಸಂಕ್ಷಿಪ್ತವಾಗಿ ಉತ್ತರಿಸಿ." },
+    "ml":     { label:"മലയാളം — Malayalam", hl:"ml", htmlLang:"ml", suffix:"ദയവായി ഇതിന് മലയാളത്തിൽ, ലളിതമായ വാക്കുകളിൽ, ചുരുക്കി മറുപടി നൽകുക." },
+    "pa":     { label:"ਪੰਜਾਬੀ — Punjabi", hl:"pa", htmlLang:"pa", suffix:"ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਦਾ ਜਵਾਬ ਪੰਜਾਬੀ ਵਿੱਚ, ਸੌਖੇ ਸ਼ਬਦਾਂ ਵਿੱਚ ਅਤੇ ਸੰਖੇਪ ਵਿੱਚ ਦਿਓ।" },
+    "ur":     { label:"اردو — Urdu", hl:"ur", htmlLang:"ur", suffix:"براہ کرم اس کا جواب اردو میں، آسان الفاظ میں اور مختصر دیں۔" }
+  };
+
+  var TARGETS = {
+    aimode: { name:"Google AI Mode", label:"Google AI Mode", note:"Gemini", auto:true,
+      url:function(q,hl){ return "https://www.google.com/search?udm=50&aep=11" + (hl ? "&hl=" + hl : "") + "&q=" + encodeURIComponent(q); } },
+    gemini: { name:"Gemini", label:"Gemini app", note:"needs a paste", auto:false,
+      warn:"The Gemini app drops prompts sent in a URL. This link will copy the question to their clipboard and open Gemini, so they paste and send. Google AI Mode runs on Gemini and needs no paste.",
+      url:function(q){ return "https://gemini.google.com/app?q=" + encodeURIComponent(q); } },
+    chatgpt:    { name:"ChatGPT", label:"ChatGPT", note:"asks on open", auto:true,
+      url:function(q){ return "https://chatgpt.com/?q=" + encodeURIComponent(q); } },
+    claude:     { name:"Claude", label:"Claude", note:"asks on open", auto:true,
+      url:function(q){ return "https://claude.ai/new?q=" + encodeURIComponent(q); } },
+    perplexity: { name:"Perplexity", label:"Perplexity", note:"asks on open", auto:true,
+      url:function(q){ return "https://www.perplexity.ai/search?q=" + encodeURIComponent(q); } },
+    grok:       { name:"Grok", label:"Grok", note:"asks on open", auto:true,
+      url:function(q){ return "https://grok.com/?q=" + encodeURIComponent(q); } }
+  };
+
+  /* ---------------- helpers ---------------- */
+  function pack(s){
+    var b = new TextEncoder().encode(s), bin = "";
+    for (var i=0;i<b.length;i++) bin += String.fromCharCode(b[i]);
+    return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  function unpack(s){
+    s = s.replace(/-/g,"+").replace(/_/g,"/");
+    while (s.length % 4) s += "=";
+    var bin = atob(s), b = new Uint8Array(bin.length);
+    for (var i=0;i<bin.length;i++) b[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(b);
+  }
+  function baseUrl(){ return location.origin + location.pathname; }
+  function fill(s, name){ return s.replace("{name}", name); }
+  function copyFor(lang, mode){
+    var byLang = COPY[lang] || COPY.en;
+    return byLang[mode] || byLang.warm || COPY.en.warm;
+  }
+  function fullPrompt(q, langKey){
+    var L = LANGS[langKey];
+    return (L && L.suffix) ? q.trim() + "\n\n" + L.suffix : q.trim();
+  }
+  function pref(k, v){
+    try {
+      if (v === undefined) return localStorage.getItem(k);
+      localStorage.setItem(k, v);
+    } catch(e){ return null; }
+  }
+
+  function parseHash(){
+    var h = location.hash.replace(/^#/,"");
+    if (!h) return null;
+    var p = new URLSearchParams(h);
+    if (!p.get("q")) return null;
+    try {
+      return {
+        q: unpack(p.get("q")),
+        note: p.get("n") ? unpack(p.get("n")) : "",
+        t: TARGETS[p.get("t")] ? p.get("t") : "aimode",
+        l: LANGS[p.get("l")] ? p.get("l") : "",
+        m: MODES[p.get("m")] ? p.get("m") : "warm"
+      };
+    } catch(e){ return null; }
+  }
+
+  var payload = parseHash();
+  if (payload) runReveal(payload); else runMaker();
+
+  /* ===================== MAKER ===================== */
+  function runMaker(){
+    document.getElementById("maker").style.display = "block";
+
+    var qEl = document.getElementById("q"),
+        nEl = document.getElementById("note"),
+        lEl = document.getElementById("lang"),
+        prev = document.getElementById("preview"),
+        modeBox = document.getElementById("modes"),
+        chips = document.getElementById("chips"),
+        warn = document.getElementById("warn"),
+        out = document.getElementById("link"),
+        bCopy = document.getElementById("copy"),
+        bWa = document.getElementById("wa"),
+        bTest = document.getElementById("test"),
+        btnOut = document.getElementById("btnlink"),
+        bbCopy = document.getElementById("bcopy"),
+        bbWa = document.getElementById("bwa"),
+        bbOpen = document.getElementById("bopen"),
+        pick = "aimode", mode = "warm", url = "", btnUrl = "";
+
+    Object.keys(LANGS).forEach(function(k){
+      var o = document.createElement("option");
+      o.value = k; o.textContent = LANGS[k].label;
+      lEl.appendChild(o);
+    });
+    lEl.value = "hi";
+
+    Object.keys(MODES).forEach(function(k){
+      var b = document.createElement("button");
+      b.className = "chip"; b.type = "button";
+      b.setAttribute("aria-pressed", k === mode);
+      b.innerHTML = MODES[k].label + "<small>" + MODES[k].note + "</small>";
+      b.onclick = function(){
+        mode = k;
+        [].forEach.call(modeBox.children, function(c,i){
+          c.setAttribute("aria-pressed", Object.keys(MODES)[i] === k);
+        });
+        nEl.placeholder = NOTE_PLACEHOLDER[k];
+        build();
+      };
+      modeBox.appendChild(b);
+    });
+    nEl.placeholder = NOTE_PLACEHOLDER[mode];
+
+    Object.keys(TARGETS).forEach(function(k){
+      var b = document.createElement("button");
+      b.className = "chip"; b.type = "button";
+      b.setAttribute("aria-pressed", k === pick);
+      b.innerHTML = TARGETS[k].label + "<small>" + TARGETS[k].note + "</small>";
+      b.onclick = function(){
+        pick = k;
+        [].forEach.call(chips.children, function(c,i){
+          c.setAttribute("aria-pressed", Object.keys(TARGETS)[i] === k);
+        });
+        build();
+      };
+      chips.appendChild(b);
+    });
+
+    function build(){
+      var q = qEl.value.trim(), n = nEl.value.trim(), l = lEl.value;
+
+      warn.className = TARGETS[pick].warn ? "warn on" : "warn";
+      warn.textContent = TARGETS[pick].warn || "";
+
+      if (LANGS[l].suffix){
+        prev.className = "preview on";
+        prev.textContent = "Added to the question: " + LANGS[l].suffix;
+      } else {
+        prev.className = "preview";
+      }
+
+      btnUrl = baseUrl() + "ask/" + (l ? "#l=" + l : "");
+      btnOut.textContent = btnUrl;
+
+      if (!q){
+        url = "";
+        out.textContent = "Type a question above.";
+        bCopy.disabled = bWa.disabled = bTest.disabled = true;
+        return;
+      }
+      url = baseUrl() + "#q=" + pack(q) + "&t=" + pick
+          + (l ? "&l=" + l : "")
+          + (mode !== "warm" ? "&m=" + mode : "")
+          + (n ? "&n=" + pack(n) : "");
+      out.textContent = url;
+      bCopy.disabled = bWa.disabled = bTest.disabled = false;
+    }
+
+    qEl.addEventListener("input", build);
+    nEl.addEventListener("input", build);
+    lEl.addEventListener("change", build);
+    build();
+
+    bCopy.onclick = function(){
+      navigator.clipboard.writeText(url).then(function(){
+        bCopy.textContent = "Copied";
+        setTimeout(function(){ bCopy.textContent = "Copy link"; }, 1600);
+      }, function(){ bCopy.textContent = "Select it above and copy"; });
+    };
+    bWa.onclick = function(){
+      var msg = (nEl.value.trim() ? nEl.value.trim() + "\n" : "") + url;
+      window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
+    };
+    bTest.onclick = function(){ location.href = url; location.reload(); };
+
+    bbCopy.onclick = function(){
+      navigator.clipboard.writeText(btnUrl).then(function(){
+        bbCopy.textContent = "Copied";
+        setTimeout(function(){ bbCopy.textContent = "Copy button link"; }, 1600);
+      }, function(){ bbCopy.textContent = "Select it above and copy"; });
+    };
+    bbWa.onclick = function(){
+      window.open("https://wa.me/?text=" + encodeURIComponent(btnUrl), "_blank", "noopener");
+    };
+    bbOpen.onclick = function(){ window.open(btnUrl, "_blank", "noopener"); };
+  }
+
+  /* ===================== REVEAL ===================== */
+  function runReveal(d){
+    document.getElementById("maker").style.display = "none";
+    document.getElementById("reveal").className = "on";
+
+    var L  = LANGS[d.l] || LANGS[""],
+        M  = MODES[d.m],
+        UI = copyFor(d.l, d.m),
+        t  = TARGETS[d.t],
+        prompt = fullPrompt(d.q, d.l),
+        dest = t.url(prompt, L.hl);
+
+    if (L.htmlLang) document.documentElement.lang = L.htmlLang;
+    if (d.l === "ur") document.documentElement.dir = "rtl";
+
+    var tease = document.getElementById("rTease"),
+        typed = document.getElementById("typed"),
+        send = document.getElementById("rSend"),
+        status = document.getElementById("rStatus"),
+        openBtn = document.getElementById("openBtn"),
+        skipBtn = document.getElementById("skip"),
+        caret = document.createElement("span");
+    caret.className = "caret";
+
+    document.getElementById("rName").textContent = t.name;
+    tease.textContent = UI.tease;
+
+    var mine = document.getElementById("mine");
+    mine.href = baseUrl();
+    mine.textContent = UI.mine;
+
+    if (d.note){
+      var n = document.getElementById("rNote");
+      n.textContent = d.note;
+      n.hidden = false;
+    }
+
+    var animate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                  && pref("lmaaify:skip") !== "1";
+
+    skipBtn.textContent = UI.skip;
+    skipBtn.onclick = function(){ pref("lmaaify:skip", "1"); finish(); };
+
+    var done = false;
+    function finish(){
+      if (done) return;
+      done = true;
+      skipBtn.className = "";
+      typed.textContent = prompt;
+      caret.remove();
+      send.className = "send hot";
+
+      if (t.auto){
+        // punchline lands in the yellow, then we go
+        tease.textContent = "";
+        var hl = document.createElement("span");
+        hl.className = "hl";
+        hl.textContent = UI.punch;
+        tease.appendChild(hl);
+
+        status.textContent = fill(UI.sending, t.name) + " ";
+        var a = document.createElement("a");
+        a.href = dest; a.textContent = UI.now;
+        status.appendChild(a);
+        setTimeout(function(){ location.href = dest; }, M.hold);
+      } else {
+        tease.textContent = UI.pasteTease;
+        status.textContent = fill(UI.pasteBody, t.name);
+        openBtn.className = "on";
+        openBtn.textContent = fill(UI.pasteBtn, t.name);
+        openBtn.onclick = function(){
+          var go = function(){ location.href = dest; };
+          if (navigator.clipboard) navigator.clipboard.writeText(prompt).then(go, go);
+          else go();
+        };
+      }
+    }
+
+    if (!animate){
+      setTimeout(finish, 700);
+      return;
+    }
+
+    skipBtn.className = "on";
+
+    var txt = document.createTextNode("");
+    typed.appendChild(txt);
+    typed.appendChild(caret);
+
+    var base = M.cps, i = 0;
+    (function tick(){
+      if (done) return;
+      if (i >= prompt.length){ setTimeout(finish, base * 14); return; }
+      var ch = prompt[i++];
+      txt.nodeValue += ch;
+      var wait = ch === "\n" ? base * 5
+               : ch === " "  ? base * 0.75
+               : /[.,?!।]/.test(ch) ? base * 5
+               : base;
+      setTimeout(tick, wait);
+    })();
+  }
+})();
+</script>
 </body>
 </html>

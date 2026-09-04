@@ -1,0 +1,16 @@
+{
+  "name": "Ask AI",
+  "short_name": "Ask AI",
+  "description": "Ask a question, get the answer back in your language.",
+  "start_url": "./ask/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e9ece5",
+  "theme_color": "#f5c518",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

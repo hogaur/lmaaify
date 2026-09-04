@@ -150,7 +150,19 @@ html[lang="hi"] .tease{line-height:1.3}
     </div>
   </div>
 
+  <div class="out">
+    <label for="btnlink">And a button for next time <span class="hint">— send this once</span></label>
+    <p class="sub" style="margin:0 0 12px;font-size:14.5px">A page of their own, already set to this language. They can keep it on their home screen and stop needing you.</p>
+    <div class="link" id="btnlink"></div>
+    <div class="row">
+      <button class="act" id="bcopy">Copy button link</button>
+      <button class="act" id="bwa">Send on WhatsApp</button>
+      <button class="act" id="bopen">Open it</button>
+    </div>
+  </div>
+
   <div class="foot">
+    <p><strong>The button.</strong> The second link opens a small page that does one thing: takes a question and sends it to Google AI Mode with the language instruction already attached. Added to a home screen it becomes an app icon, works offline until the moment it needs an answer, and takes dictation on Android.</p>
     <p><strong>Warm or cheeky.</strong> Warm types quickly, says something kind, and gets out of the way. Cheeky types slowly, makes them watch, and lands a punchline before the redirect. Same link, two very different receipts.</p>
     <p><strong>How the language works.</strong> None of these chatbots let a link set the reply language, so the instruction is added to the question itself. Google AI Mode also gets <code>hl=</code> so its own buttons and labels come up in the same language.</p>
     <p><strong>How the link works.</strong> The question is packed into the part after the <code>#</code>, so it never reaches a server — not even yours. This whole thing is one static file with no backend.</p>
@@ -369,7 +381,11 @@ html[lang="hi"] .tease{line-height:1.3}
         bCopy = document.getElementById("copy"),
         bWa = document.getElementById("wa"),
         bTest = document.getElementById("test"),
-        pick = "aimode", mode = "warm", url = "";
+        btnOut = document.getElementById("btnlink"),
+        bbCopy = document.getElementById("bcopy"),
+        bbWa = document.getElementById("bwa"),
+        bbOpen = document.getElementById("bopen"),
+        pick = "aimode", mode = "warm", url = "", btnUrl = "";
 
     Object.keys(LANGS).forEach(function(k){
       var o = document.createElement("option");
@@ -423,6 +439,9 @@ html[lang="hi"] .tease{line-height:1.3}
         prev.className = "preview";
       }
 
+      btnUrl = baseUrl() + "ask/" + (l ? "#l=" + l : "");
+      btnOut.textContent = btnUrl;
+
       if (!q){
         url = "";
         out.textContent = "Type a question above.";
@@ -453,6 +472,17 @@ html[lang="hi"] .tease{line-height:1.3}
       window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
     };
     bTest.onclick = function(){ location.href = url; location.reload(); };
+
+    bbCopy.onclick = function(){
+      navigator.clipboard.writeText(btnUrl).then(function(){
+        bbCopy.textContent = "Copied";
+        setTimeout(function(){ bbCopy.textContent = "Copy button link"; }, 1600);
+      }, function(){ bbCopy.textContent = "Select it above and copy"; });
+    };
+    bbWa.onclick = function(){
+      window.open("https://wa.me/?text=" + encodeURIComponent(btnUrl), "_blank", "noopener");
+    };
+    bbOpen.onclick = function(){ window.open(btnUrl, "_blank", "noopener"); };
   }
 
   /* ===================== REVEAL ===================== */
